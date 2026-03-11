@@ -7,11 +7,7 @@ import os
 import logging
 logging.basicConfig(level=logging.INFO)
 
-# Load .env from the same directory as this script (so it works regardless of cwd)
-_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
-load_dotenv(_env_path)
-# Strip in case .env has trailing space/newline (can cause "Token is invalid")
-VIDEOSDK_AUTH_TOKEN = (os.getenv("VIDEOSDK_AUTH_TOKEN") or "").strip() or None
+load_dotenv()
 
 # Define the agent's behavior and personality
 class MyVoiceAgent(Agent):
@@ -53,19 +49,13 @@ def make_context() -> JobContext:
 
 if __name__ == "__main__":
     try:
-        if not VIDEOSDK_AUTH_TOKEN:
-            raise ValueError(
-                "VIDEOSDK_AUTH_TOKEN not found. Add it to your .env file in the Voice_agent folder, e.g.:\n"
-                'VIDEOSDK_AUTH_TOKEN="your-token-here"'
-            )
         # Register the agent with a unique ID
         options = Options(
-            agent_id="MyTelephonyAgent", # CRITICAL: Unique identifier for routing
-            register=True, # REQUIRED: Register with VideoSDK for telephony
-            max_processes=10, # Concurrent calls to handle
+            agent_id="MyTelephonyAgent",  # CRITICAL: Unique identifier for routing
+            register=True,               # REQUIRED: Register with VideoSDK for telephony
+            max_processes=10,            # Concurrent calls to handle
             host="localhost",
             port=8081,
-            auth_token=VIDEOSDK_AUTH_TOKEN,  # Pass token from .env so Worker sees it
         )
         job = WorkerJob(entrypoint=start_session, jobctx=make_context, options=options)
         job.start()
